@@ -87,7 +87,13 @@ window.I18N = {
     "donate.trx.sub": "Tron · сеть TRC-20",
     "donate.note": "Спасибо за поддержку проекта с открытым исходным кодом! Скопируйте нужный адрес или воспользуйтесь ссылкой ЮMoney.",
     "copy": "Скопировать",
-    "copied": "Скопировано"
+    "copied": "Скопировано",
+
+    "err.badge": "Ошибка 404",
+    "err.title": "Страница не найдена",
+    "err.sub": "Похоже, такой страницы не существует или она была перемещена. Проверьте адрес или вернитесь на главную.",
+    "err.home": "На главную",
+    "err.donate": "Поддержать проект"
   },
 
   en: {
@@ -177,6 +183,12 @@ window.I18N = {
     "donate.trx.sub": "Tron · TRC-20 network",
     "donate.note": "Thanks for supporting open-source software! Copy the address you need or use the YooMoney link.",
     "copy": "Copy",
-    "copied": "Copied"
+    "copied": "Copied",
+
+    "err.badge": "Error 404",
+    "err.title": "Page not found",
+    "err.sub": "This page doesn't seem to exist or may have been moved. Check the address or head back home.",
+    "err.home": "Back to home",
+    "err.donate": "Support the project"
   }
 };

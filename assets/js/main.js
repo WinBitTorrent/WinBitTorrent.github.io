@@ -76,10 +76,11 @@
   function updateInternalLinks() {
     var theme = root.getAttribute("data-theme") || currentTheme();
     var lang = root.getAttribute("lang") || currentLang();
+    var internal = { "./": 1, "donate": 1, "index.html": 1, "donate.html": 1 };
     document.querySelectorAll("a[href]").forEach(function (a) {
       var href = a.getAttribute("href");
       var base = href.split("?")[0].split("#")[0];
-      if (base === "index.html" || base === "donate.html") {
+      if (internal[base]) {
         a.setAttribute("href", base + "?theme=" + theme + "&lang=" + lang);
       }
     });
