@@ -48,12 +48,21 @@
     return (navigator.language || "en").toLowerCase().indexOf("ru") === 0 ? "ru" : "en";
   }
 
+  function sizeLabel(mb, lang) {
+    return mb + (lang === "ru" ? " МБ" : " MB");
+  }
+
   function applyLang(lang) {
     var dict = window.I18N[lang] || window.I18N.en;
     root.setAttribute("lang", lang);
     document.querySelectorAll("[data-i18n]").forEach(function (el) {
       var key = el.getAttribute("data-i18n");
-      if (dict[key] != null) el.textContent = dict[key];
+      var text = dict[key];
+      if (text == null) return;
+      if (key === "hero.badge") text = text.replace("{version}", release.version);
+      else if (key === "hero.sub.installer") text = text.replace("{size}", sizeLabel(release.installerSizeMB, lang));
+      else if (key === "hero.sub.portable") text = text.replace("{size}", sizeLabel(release.portableSizeMB, lang));
+      el.textContent = text;
     });
     document.querySelectorAll("[data-i18n-aria]").forEach(function (el) {
       var key = el.getAttribute("data-i18n-aria");
@@ -94,6 +103,65 @@
     if ((th || lg)) {
       try { history.replaceState(null, "", location.pathname); } catch (e) {}
     }
+  }
+
+  /* -------------------------- Latest release ---------------------------- */
+  // Fallback values match the release already baked into the HTML, in case
+  // the GitHub API is slow, offline, blocked, or rate-limited.
+  var release = { version: "1.0.0", installerUrl: null, installerSizeMB: 109, portableUrl: null, portableSizeMB: 154 };
+  var RELEASES_API = "https://api.github.com/repos/Gorbachevvv/winBitTorrent/releases/latest";
+  var RELEASE_CACHE_KEY = "wbt-release-cache-v1";
+  var RELEASE_CACHE_TTL = 30 * 60 * 1000; // 30 min, keeps repeat visits off the GitHub API rate limit
+
+  function readFallbackDownloadUrls() {
+    var installerLink = document.getElementById("dl-installer");
+    var portableLink = document.getElementById("dl-portable");
+    if (installerLink) release.installerUrl = installerLink.getAttribute("href");
+    if (portableLink) release.portableUrl = portableLink.getAttribute("href");
+  }
+
+  function parseRelease(json) {
+    if (!json || !json.tag_name || !Array.isArray(json.assets)) return null;
+    var installer = json.assets.filter(function (a) { return /\.exe$/i.test(a.name); })[0];
+    var portable = json.assets.filter(function (a) { return /\.zip$/i.test(a.name); })[0];
+    if (!installer || !portable) return null;
+    return {
+      version: String(json.tag_name).replace(/^v/i, ""),
+      installerUrl: installer.browser_download_url,
+      installerSizeMB: Math.round(installer.size / 1048576),
+      portableUrl: portable.browser_download_url,
+      portableSizeMB: Math.round(portable.size / 1048576)
+    };
+  }
+
+  function applyRelease(data) {
+    release = data;
+    var installerLink = document.getElementById("dl-installer");
+    var portableLink = document.getElementById("dl-portable");
+    if (installerLink) installerLink.href = release.installerUrl;
+    if (portableLink) portableLink.href = release.portableUrl;
+    applyLang(root.getAttribute("lang") || currentLang());
+  }
+
+  function fetchLatestRelease() {
+    if (!document.getElementById("dl-installer")) return; // only relevant on the home page
+
+    var cached = null;
+    try { cached = JSON.parse(lsGet(RELEASE_CACHE_KEY) || "null"); } catch (e) {}
+    if (cached && cached.data && Date.now() - cached.t < RELEASE_CACHE_TTL) {
+      applyRelease(cached.data);
+      return;
+    }
+
+    fetch(RELEASES_API, { headers: { Accept: "application/vnd.github+json" } })
+      .then(function (r) { if (!r.ok) throw new Error("bad status"); return r.json(); })
+      .then(function (json) {
+        var data = parseRelease(json);
+        if (!data) return;
+        try { localStorage.setItem(RELEASE_CACHE_KEY, JSON.stringify({ t: Date.now(), data: data })); } catch (e) {}
+        applyRelease(data);
+      })
+      .catch(function () { /* offline / blocked / rate-limited: keep the static fallback already on the page */ });
   }
 
   /* --------------------------- Scroll reveal --------------------------- */
@@ -145,6 +213,7 @@
 
   /* ------------------------------ Wire up ------------------------------ */
   function init() {
+    readFallbackDownloadUrls();
     consumeIncomingState();
     applyLang(currentLang());
     updateInternalLinks();
@@ -158,6 +227,7 @@
 
     initReveal();
     initCopy();
+    fetchLatestRelease();
   }
 
   if (document.readyState === "loading") {

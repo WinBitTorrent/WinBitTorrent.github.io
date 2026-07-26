@@ -8,13 +8,13 @@ window.I18N = {
     "nav.source": "Исходный код",
     "nav.download": "Скачать",
 
-    "hero.badge": "Версия 1.0.0",
+    "hero.badge": "Версия {version}",
     "hero.stable": "Стабильный релиз",
     "hero.tagline": "Нативный WinUI 3 клиент qBittorrent для Windows — современный интерфейс Windows 11 поверх проверенного движка qBittorrent / libtorrent.",
     "hero.download": "Скачать для Windows",
     "hero.source": "Исходный код",
-    "hero.sub.installer": "Установщик (.exe, 109 МБ)",
-    "hero.sub.portable": "Портативная версия (.zip, 154 МБ)",
+    "hero.sub.installer": "Установщик (.exe, {size})",
+    "hero.sub.portable": "Портативная версия (.zip, {size})",
     "hero.sub.or": "или",
 
     "shots.title": "Знакомьтесь с интерфейсом",
@@ -104,13 +104,13 @@ window.I18N = {
     "nav.source": "Source",
     "nav.download": "Download",
 
-    "hero.badge": "Version 1.0.0",
+    "hero.badge": "Version {version}",
     "hero.stable": "Stable release",
     "hero.tagline": "A native WinUI 3 desktop client for qBittorrent — a modern Windows 11 interface on top of the proven qBittorrent / libtorrent engine.",
     "hero.download": "Download for Windows",
     "hero.source": "Source code",
-    "hero.sub.installer": "Installer (.exe, 109 MB)",
-    "hero.sub.portable": "Portable (.zip, 154 MB)",
+    "hero.sub.installer": "Installer (.exe, {size})",
+    "hero.sub.portable": "Portable (.zip, {size})",
     "hero.sub.or": "or",
 
     "shots.title": "Meet the interface",
