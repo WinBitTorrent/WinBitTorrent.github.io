@@ -52,6 +52,13 @@
     return mb + (lang === "ru" ? " МБ" : " MB");
   }
 
+  function renderModalSizes(lang) {
+    var iSize = document.getElementById("dl-modal-installer-size");
+    var pSize = document.getElementById("dl-modal-portable-size");
+    if (iSize) iSize.textContent = sizeLabel(release.installerSizeMB, lang);
+    if (pSize) pSize.textContent = sizeLabel(release.portableSizeMB, lang);
+  }
+
   function applyLang(lang) {
     var dict = window.I18N[lang] || window.I18N.en;
     root.setAttribute("lang", lang);
@@ -59,9 +66,7 @@
       var key = el.getAttribute("data-i18n");
       var text = dict[key];
       if (text == null) return;
-      if (key === "hero.badge") text = text.replace("{version}", release.version);
-      else if (key === "hero.sub.installer") text = text.replace("{size}", sizeLabel(release.installerSizeMB, lang));
-      else if (key === "hero.sub.portable") text = text.replace("{size}", sizeLabel(release.portableSizeMB, lang));
+      if (key === "hero.badge" || key === "dlmodal.subtitle") text = text.replace("{version}", release.version);
       el.textContent = text;
     });
     document.querySelectorAll("[data-i18n-aria]").forEach(function (el) {
@@ -71,6 +76,7 @@
     document.querySelectorAll(".seg-lang [data-lang]").forEach(function (b) {
       b.classList.toggle("active", b.getAttribute("data-lang") === lang);
     });
+    renderModalSizes(lang);
   }
 
   function setLang(lang) {
@@ -114,8 +120,8 @@
   var RELEASE_CACHE_TTL = 30 * 60 * 1000; // 30 min, keeps repeat visits off the GitHub API rate limit
 
   function readFallbackDownloadUrls() {
-    var installerLink = document.getElementById("dl-installer");
-    var portableLink = document.getElementById("dl-portable");
+    var installerLink = document.getElementById("dl-modal-installer");
+    var portableLink = document.getElementById("dl-modal-portable");
     if (installerLink) release.installerUrl = installerLink.getAttribute("href");
     if (portableLink) release.portableUrl = portableLink.getAttribute("href");
   }
@@ -136,15 +142,15 @@
 
   function applyRelease(data) {
     release = data;
-    var installerLink = document.getElementById("dl-installer");
-    var portableLink = document.getElementById("dl-portable");
+    var installerLink = document.getElementById("dl-modal-installer");
+    var portableLink = document.getElementById("dl-modal-portable");
     if (installerLink) installerLink.href = release.installerUrl;
     if (portableLink) portableLink.href = release.portableUrl;
     applyLang(root.getAttribute("lang") || currentLang());
   }
 
   function fetchLatestRelease() {
-    if (!document.getElementById("dl-installer")) return; // only relevant on the home page
+    if (!document.getElementById("dl-modal-installer")) return; // only relevant on the home page
 
     var cached = null;
     try { cached = JSON.parse(lsGet(RELEASE_CACHE_KEY) || "null"); } catch (e) {}
@@ -162,6 +168,66 @@
         applyRelease(data);
       })
       .catch(function () { /* offline / blocked / rate-limited: keep the static fallback already on the page */ });
+  }
+
+  /* --------------------------- Download modal ---------------------------- */
+  var modalLastFocused = null;
+
+  function onModalKeydown(e) {
+    var overlay = document.getElementById("dl-modal-overlay");
+    if (!overlay) return;
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeDownloadModal();
+      return;
+    }
+    if (e.key === "Tab") {
+      var dialog = overlay.querySelector(".dl-modal");
+      var focusable = dialog.querySelectorAll('a[href], button:not([disabled])');
+      if (!focusable.length) return;
+      var first = focusable[0], last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+  }
+
+  function openDownloadModal() {
+    var overlay = document.getElementById("dl-modal-overlay");
+    if (!overlay) return;
+    modalLastFocused = document.activeElement;
+    overlay.classList.add("is-open");
+    overlay.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    var closeBtn = document.getElementById("dl-modal-close");
+    if (closeBtn) closeBtn.focus();
+    document.addEventListener("keydown", onModalKeydown);
+  }
+
+  function closeDownloadModal() {
+    var overlay = document.getElementById("dl-modal-overlay");
+    if (!overlay) return;
+    overlay.classList.remove("is-open");
+    overlay.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    document.removeEventListener("keydown", onModalKeydown);
+    if (modalLastFocused && typeof modalLastFocused.focus === "function") modalLastFocused.focus();
+  }
+
+  function initDownloadModal() {
+    var trigger = document.getElementById("download-trigger");
+    var overlay = document.getElementById("dl-modal-overlay");
+    var closeBtn = document.getElementById("dl-modal-close");
+    if (!trigger || !overlay) return;
+    trigger.addEventListener("click", openDownloadModal);
+    if (closeBtn) closeBtn.addEventListener("click", closeDownloadModal);
+    overlay.addEventListener("click", function (e) {
+      if (e.target === overlay) closeDownloadModal();
+    });
   }
 
   /* --------------------------- Scroll reveal --------------------------- */
@@ -227,6 +293,7 @@
 
     initReveal();
     initCopy();
+    initDownloadModal();
     fetchLatestRelease();
   }
 

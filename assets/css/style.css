@@ -735,6 +735,157 @@ h1, h2, h3 {
   font-size: 0.92rem;
 }
 
+/* ---------------------------- Download modal ----------------------------- */
+.dl-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity var(--dur-med) var(--ease-standard),
+    background var(--dur-med) var(--ease-standard),
+    backdrop-filter var(--dur-med) var(--ease-standard),
+    visibility 0s linear var(--dur-med);
+}
+.dl-modal-overlay.is-open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  background: rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(10px) saturate(140%);
+  -webkit-backdrop-filter: blur(10px) saturate(140%);
+  transition: opacity var(--dur-med) var(--ease-standard),
+    background var(--dur-med) var(--ease-standard),
+    backdrop-filter var(--dur-med) var(--ease-standard),
+    visibility 0s linear 0s;
+}
+:root[data-theme="dark"] .dl-modal-overlay.is-open { background: rgba(0, 0, 0, 0.62); }
+
+.dl-modal {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  background: var(--layer-solid);
+  border: 1px solid var(--card-border-strong);
+  border-radius: var(--radius-large);
+  box-shadow: var(--shadow-raised);
+  padding: 30px 26px 24px;
+  transform: translateY(18px) scale(0.96);
+  opacity: 0;
+  transition: transform var(--dur-med) var(--ease-decel), opacity var(--dur-med) var(--ease-decel);
+}
+.dl-modal-overlay.is-open .dl-modal {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.dl-modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+}
+
+.dl-modal-head { text-align: center; }
+.dl-modal-icon {
+  width: 54px;
+  height: 54px;
+  margin: 0 auto 16px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(160deg, var(--accent-hover), var(--accent));
+  color: var(--accent-text);
+  box-shadow: var(--shadow-accent);
+}
+.dl-modal-icon svg { width: 26px; height: 26px; }
+.dl-modal-head h2 { font-size: 1.28rem; font-weight: 680; }
+.dl-modal-head p { color: var(--text-3); font-size: 0.88rem; margin: 6px 0 0; }
+
+.dl-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 24px;
+}
+.dl-option {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 15px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--card-border);
+  background: var(--control-bg);
+  text-decoration: none;
+  transition: background var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
+}
+.dl-option:hover {
+  background: var(--control-bg-hover);
+  border-color: var(--card-border-strong);
+  transform: translateX(2px);
+  text-decoration: none;
+}
+.dl-option:active { transform: scale(0.98); }
+.dl-option-ico {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.dl-option-ico svg { width: 22px; height: 22px; }
+.dl-option-txt { flex: 1; min-width: 0; }
+.dl-option-txt h3 { font-size: 0.96rem; font-weight: 640; color: var(--text-1); margin-bottom: 2px; }
+.dl-option-txt p { font-size: 0.8rem; color: var(--text-3); margin: 0; line-height: 1.4; }
+.dl-option-meta {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+}
+.dl-option-meta .ext {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.dl-option-meta .size { font-size: 0.76rem; color: var(--text-3); }
+.dl-option .chev { flex: 0 0 auto; width: 16px; height: 16px; color: var(--text-3); }
+
+.dl-modal-foot {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--card-border);
+  font-size: 0.8rem;
+  color: var(--text-3);
+}
+.dl-modal-foot svg { flex: 0 0 auto; width: 16px; height: 16px; margin-top: 1px; }
+
+@media (max-width: 480px) {
+  .dl-modal { padding: 26px 18px 20px; }
+  .dl-option { padding: 12px; gap: 11px; }
+  .dl-option-ico { width: 38px; height: 38px; }
+}
+
 /* ------------------------------- 404 page ------------------------------- */
 .error-page {
   min-height: calc(100vh - var(--nav-h));
