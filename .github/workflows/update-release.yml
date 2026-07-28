@@ -1,0 +1,53 @@
+name: Update release.json
+
+on:
+  schedule:
+    - cron: "0 * * * *" # every hour
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  update-release-json:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout site repo
+        uses: actions/checkout@v4
+
+      - name: Fetch latest release from the app repo
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -sSL --fail \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/Gorbachevvv/winBitTorrent/releases/latest" \
+            -o release_raw.json
+
+      - name: Build trimmed release.json
+        run: |
+          node -e '
+            const fs = require("fs");
+            const raw = JSON.parse(fs.readFileSync("release_raw.json", "utf8"));
+            if (!raw || !raw.tag_name || !Array.isArray(raw.assets)) {
+              console.error("Unexpected release payload, aborting without changes");
+              process.exit(1);
+            }
+            const pick = (a) => ({ name: a.name, browser_download_url: a.browser_download_url, size: a.size });
+            const out = { tag_name: raw.tag_name, assets: raw.assets.map(pick) };
+            fs.writeFileSync("release.json", JSON.stringify(out, null, 2) + "\n");
+          '
+          rm release_raw.json
+
+      - name: Commit and push if release.json changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add release.json
+          if git diff --cached --quiet; then
+            echo "release.json unchanged, nothing to commit"
+          else
+            git commit -m "chore: update release.json"
+            git push
+          fi
