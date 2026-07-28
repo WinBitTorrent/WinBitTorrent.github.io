@@ -117,12 +117,14 @@
   // release server-side and commits the result here. Visitors' browsers never
   // call api.github.com directly, so there's nothing for a shared VPN exit IP
   // to get rate-limited on and nothing for a network filter to block.
+  // It's fetched fresh on every page load (no app-level cache) — it's a tiny
+  // same-origin file served by the same CDN as the rest of the site, so
+  // there's no rate limit or cost to worry about, and visitors always see
+  // the current release without needing to clear storage.
   // Fallback values match the release already baked into the HTML, used only
   // if release.json itself can't be fetched (e.g. fully offline).
   var release = { version: "1.0.0", installerUrl: null, installerSizeMB: 109, portableUrl: null, portableSizeMB: 154 };
   var RELEASE_JSON_URL = "release.json";
-  var RELEASE_CACHE_KEY = "wbt-release-cache-v1";
-  var RELEASE_CACHE_TTL = 30 * 60 * 1000; // 30 min, avoids re-fetching on every page view within a session
 
   function readFallbackDownloadUrls() {
     var installerLink = document.getElementById("dl-modal-installer");
@@ -157,19 +159,11 @@
   function fetchLatestRelease() {
     if (!document.getElementById("dl-modal-installer")) return; // only relevant on the home page
 
-    var cached = null;
-    try { cached = JSON.parse(lsGet(RELEASE_CACHE_KEY) || "null"); } catch (e) {}
-    if (cached && cached.data && Date.now() - cached.t < RELEASE_CACHE_TTL) {
-      applyRelease(cached.data);
-      return;
-    }
-
     fetch(RELEASE_JSON_URL, { cache: "no-cache" })
       .then(function (r) { if (!r.ok) throw new Error("bad status"); return r.json(); })
       .then(function (json) {
         var data = parseRelease(json);
         if (!data) return;
-        try { localStorage.setItem(RELEASE_CACHE_KEY, JSON.stringify({ t: Date.now(), data: data })); } catch (e) {}
         applyRelease(data);
       })
       .catch(function () { /* offline or release.json missing: keep the static fallback already on the page */ });
