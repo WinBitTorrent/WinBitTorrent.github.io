@@ -1,15 +1,15 @@
 {
-  "tag_name": "v1.2.0",
+  "tag_name": "v2.0.0",
   "assets": [
     {
-      "name": "WinBitTorrent-1.2.0-portable.zip",
-      "browser_download_url": "https://github.com/Gorbachevvv/winBitTorrent/releases/download/v1.2.0/WinBitTorrent-1.2.0-portable.zip",
-      "size": 146852935
+      "name": "WinBitTorrent-2.0.0-portable.zip",
+      "browser_download_url": "https://github.com/Gorbachevvv/winBitTorrent/releases/download/v2.0.0/WinBitTorrent-2.0.0-portable.zip",
+      "size": 172647939
     },
     {
-      "name": "WinBitTorrent-1.2.0-setup.exe",
-      "browser_download_url": "https://github.com/Gorbachevvv/winBitTorrent/releases/download/v1.2.0/WinBitTorrent-1.2.0-setup.exe",
-      "size": 104612797
+      "name": "WinBitTorrent-2.0.0-setup.exe",
+      "browser_download_url": "https://github.com/Gorbachevvv/winBitTorrent/releases/download/v2.0.0/WinBitTorrent-2.0.0-setup.exe",
+      "size": 121800565
     }
   ]
 }
